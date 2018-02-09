@@ -1,7 +1,6 @@
 /**
  * External Dependencies
 */
-var puppeteer = require('puppeteer')
 var cheerio = require('cheerio')
 var request = require('request')
 var fs = require('fs')
@@ -12,6 +11,7 @@ var path = require('path')
 */
 var initMongo = require('./mongo')
 var delay = require('./delay')
+var requestGet = require('./requestGet')
 
 
 var startingUrl = 'https://www.xkcd.com'
@@ -32,8 +32,7 @@ function parse(html) {
   return Promise.resolve(payload)
 }
 
-async function scrape_recursive(page) {
-  var html = await page.evaluate(() => document.body.innerHTML);
+async function scrape_recursive(html) {
   const { title, image, imageTitle, nextHref } = await parse(html)
   await db.collection('xkcd').insert({ title, image, imageTitle, nextHref })
   var linkHref = nextHref.replace(/\//g,'');
@@ -47,8 +46,7 @@ async function scrape_recursive(page) {
   if (parseInt(linkHref) >= 1) {
     console.log(`Scraping url ${startingUrl}${nextHref}`)
     $prevLink = 'a[accesskey=p]'
-    await page.click($prevLink)
-    await delay(300)
+    var page = await requestGet(`${startingUrl}${nextHref}`)
     return scrape_recursive(page)
   }
   process.exit()
@@ -56,14 +54,11 @@ async function scrape_recursive(page) {
 
 async function main(url) {
   global.db = await initMongo()
-  var browser = await puppeteer.launch({ headless: true })
-  var page = await browser.newPage()
-  await page.goto(url)
-  await scrape_recursive(page)
- 
-  // scrape completed. close browser and mongo db  
-  await delay(1000)
-  browser.close()
+  var html = await requestGet(url)
+  await scrape_recursive(html)
+
+  // scrape completed. close mongo db  
+  await delay(500)
   db.client.close()
 }
 
