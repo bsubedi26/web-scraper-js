@@ -5,7 +5,7 @@ const { MongoClient } = require('mongodb');
 async function initDatabase() {
 
   const url = 'mongodb://localhost:27017';
-  const dbName = 'scraper';
+  const dbName = 'scraper2';
 
   const client = await MongoClient.connect(url)
   console.log("MongoDB connected successfully!");
