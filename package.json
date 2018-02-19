@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "irc": "^0.5.0",
+    "cheerio": "^1.0.0-rc.2",
     "mongodb": "^3.0.2",
-    "node-scrapy": "^0.2.3",
-    "puppeteer": "^1.0.0"
+    "puppeteer": "^1.0.0",
+    "request": "^2.83.0"
   },
   "devDependencies": {},
   "scripts": {
